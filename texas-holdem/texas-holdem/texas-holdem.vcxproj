@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{69BF7CDC-00CE-4231-A352-CD7F8F557A0C}</ProjectGuid>
+    <ProjectGuid>{0900B633-28F9-40FF-95FE-935455D5336A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>texasholdem</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
@@ -139,7 +139,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Card.cpp" />
+    <ClCompile Include="CardManager.cpp" />
+    <ClCompile Include="Deck.cpp" />
+    <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="StringFunctions.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Card.h" />
+    <ClInclude Include="CardManager.h" />
+    <ClInclude Include="Deck.h" />
+    <ClInclude Include="GameManager.h" />
+    <ClInclude Include="Parser.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="StringFunctions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
