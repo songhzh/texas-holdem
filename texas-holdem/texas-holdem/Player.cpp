@@ -2,7 +2,7 @@
 
 
 
-Player::Player(std::string n, int m_t) : name(n), money_total(m_t)
+Player::Player(std::string n, int m_f) : name(n), money_free(m_f)
 {
 	reset();
 }
@@ -32,24 +32,71 @@ int Player::getMoneyBet()
 	return money_bet;
 }
 
+int Player::getMoneyFree()
+{
+	return money_free;
+}
+
 int Player::getMoneyTotal()
 {
 	return money_total;
 }
 
-void Player::call(int min)
+bool Player::hasMatched(int minMatch)
 {
-	if (money_total < min)
-		money_bet = money_total;
+	if (money_total < minMatch)
+		return money_bet == money_total;
 	else
-		money_bet = min;
+		return money_bet == minMatch;
 }
 
-void Player::raise(int& min)
+void Player::bet(int amt)
 {
-	if (money_total > min)
-		min = sf::getInt(min + 1, money_total);
-	call(min);
+	money_bet += amt;
+	money_free -= amt;
+}
+
+void Player::call(int minMatch)
+{
+	if (money_total < minMatch)
+		bet(money_free);
+	else
+		bet(minMatch - money_bet);
+}
+
+bool Player::raise(int& minMatch, int& minRaise)
+{
+	if (money_total < minMatch + minRaise)
+		return false;
+	std::cout << "Your bets : $" << money_bet << std::endl;
+	std::cout << "Your free : $" << money_free << std::endl;
+	std::cout << "Min raise : $" << minRaise << std::endl;
+	std::cout << "Min total : $" << minMatch + minRaise << std::endl;
+	int match = sf::getInt(1, money_total);
+	if (match - minMatch < minRaise)
+	{
+		std::cout << "You did not meet the minimum raise amount." << std::endl;
+		return false;
+	}
+	minRaise = match - minMatch;
+	minMatch = match;
+	call(minMatch);
+	return true;
+}
+
+bool Player::raise(int& minMatch, int& minRaise, int amt)
+{
+	if (money_total < minMatch + minRaise)
+		return false;
+	if (amt - minMatch < minRaise)
+	{
+		std::cout << "You did not meet the minimum raise amount." << std::endl;
+		return false;
+	}
+	minRaise = amt - minMatch;
+	minMatch = amt;
+	call(minMatch);
+	return true;
 }
 
 void Player::fold()
@@ -57,16 +104,9 @@ void Player::fold()
 	folded = true;
 }
 
-void Player::all_in(int& min)
-{
-	if (money_total > min)
-		min = money_total;
-	call(min);
-}
-
 bool Player::inRound()
 {
-	return (!folded) && (money_bet != money_total);
+	return (!folded) && (money_bet != money_free);
 }
 
 void Player::draw(Deck& d)
@@ -81,12 +121,14 @@ void Player::print()
 		std::cout << it.getName() << " ";
 	std::cout << std::endl;
 	std::cout << "Your bets : $" << money_bet << std::endl;
+	std::cout << "Your free : $" << money_free << std::endl;
 	std::cout << "Your total: $" << money_total << std::endl;
 }
 
 void Player::reset()
 {
 	money_bet = 0;
+	money_total = money_free;
 	folded = false;
 	hole.clear();
 }

@@ -6,6 +6,7 @@
 namespace sf
 {
 	bool noAdditionalCommands(std::string input, std::string s);
+	bool isInt(std::string s);
 	int getInt(int min, int max);
 	void getString(std::string& input);
 	void getString(std::string& input, std::string s);

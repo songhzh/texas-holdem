@@ -20,12 +20,30 @@ void GameManager::newGame()
 {
 	players.push_back(Player("a", 100));
 	players.push_back(Player("b", 100));
-	//players.push_back(Player("c", 100));
+	players.push_back(Player("c", 100));
 }
 
-int GameManager::getActivePlayers()
+int GameManager::getAllPlayers()
 {
 	return players.size();
+}
+
+int GameManager::getFoldedPlayers()
+{
+	int num = players.size();
+	for (auto it : players)
+		if (it.getFolded())
+			num--;
+	return num;
+}
+
+int GameManager::getMatchedMaxPlayers()
+{
+	int num = players.size();
+	for (auto it : players)
+		if (it.getMoneyFree() == 0)
+			num--;
+	return num;
 }
 
 void GameManager::dealPlayerCards(int num)
@@ -43,50 +61,85 @@ void GameManager::dealCommunityCards(int num)
 
 void GameManager::blindContainer(std::string rname)
 {
-	std::cout << rname + "." << std::endl;
+	std::cout << rname << std::endl;
 	std::cout << current->getName() + " turn." << std::endl;
-	current->raise(minMatch);
+	while (!current->raise(minMatch, minRaise)) {}
 	nextPlayer();
+	if (rname == "Big blind.")
+	{
+		bigBlind = minMatch;
+		minRaise = minMatch;
+		firstIdx = getActivePlayerIdx(1);
+	}
 }
 
-void GameManager::roundContainer(std::string rname)
+void GameManager::roundContainer(std::string rname1, std::string rname2)
 {
+	if (getFoldedPlayers() == 1 || getMatchedMaxPlayers() == 0)
+		return;
+
+	std::cout << rname1;
 	while (continueRound())
 	{
 		if (!current->inRound())
 			continue;
-		std::cout << rname + "." << std::endl;
+		std::cout << rname2 << std::endl;
 		std::cout << current->getName() + " turn." << std::endl;
-		ps::parseRound(current, canCheck, minMatch, pot, community);
+		ps::parseRound(this);
 		nextPlayer();
 	}
+	currentIdx = getActivePlayerIdx(0);
+	current = &players[getActivePlayerIdx(0)];
+	firstIdx = getActivePlayerIdx(0);
 	canCheck = true;
+	minRaise = bigBlind;
 }
 
 void GameManager::getWinner()
 {
-
+	std::cout << "Showdown." << std::endl;
+	for (auto it : players)
+	{
+		it.print();
+		std::cout << std::endl;
+	}
+		
 }
 
 void GameManager::nextPlayer()
 {
 	currentIdx = (currentIdx + 1) % players.size();
 	current = &players[currentIdx];
-	while (!players[roundIdx].inRound())
-		roundIdx = (roundIdx + 1) % players.size();
 	updatePot();
+}
+
+int GameManager::getActivePlayerIdx(int offset)
+{
+	int idx = roundIdx + offset;
+	while (!players[idx].inRound())
+		idx = (idx + 1) % players.size();
+	return idx;
 }
 
 bool GameManager::continueRound()
 {
-	int foldNum = 0;
-	for (auto it : players)
-		if (it.getFolded())
-			foldNum++;
-			
-	if (canCheck || (current->getMoneyBet() < minMatch) && (foldNum < players.size() - 1))
+	if (getFoldedPlayers() == 1 || getMatchedMaxPlayers() == 0)
+		return false;
+	if (canCheck || current->getMoneyBet() < minMatch || !allPlayersPlayed())
 		return true;
-	return (currentIdx != (roundIdx + 1) % players.size());
+	return currentIdx == firstIdx;
+}
+
+bool GameManager::allPlayersPlayed()
+{
+	for (auto it : players)
+	{
+		if (!it.inRound())
+			continue;
+		else if (!it.hasMatched(minMatch))
+			return false;
+	}
+	return true;
 }
 
 void GameManager::updatePot()
@@ -103,16 +156,19 @@ bool playersRm(Player p)
 
 void GameManager::reset()
 {
-	players.erase(std::remove_if(players.begin(), players.end(), playersRm), players.end());
 	for (auto& it : players)
 		it.reset();
+	players.erase(std::remove_if(players.begin(), players.end(), playersRm), players.end());
 	community.clear();
 	deck = Deck();
+	deck.shuffle();
+	bigBlind = 0;
 	minMatch = 0;
-	minRaise = 0;
+	minRaise = 1;
 	pot = 0;
 	gameIdx = (gameIdx + 1) % players.size();
 	roundIdx = gameIdx;
+	firstIdx = 0;
 	currentIdx = gameIdx;
 	current = &players[gameIdx];
 	canCheck = true;

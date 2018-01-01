@@ -2,8 +2,11 @@
 
 #include "StringFunctions.h"
 #include "Player.h"
+#include "GameManager.h"
+
+class GameManager;
 
 namespace ps
 {
-	void parseRound(Player* current, bool& canCheck, int& minMatch, int pot, std::vector<Card> community);
+	void parseRound(GameManager* gm);
 }
