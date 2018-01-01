@@ -18,6 +18,7 @@ public:
 	int getMoneyFree();
 	int getMoneyTotal();
 	bool hasMatched(int minMatch);
+	bool cannotRaise(int minRaise);
 
 	void call(int minMatch);
 	bool raise(int& minMatch, int& minRaise);
@@ -28,6 +29,8 @@ public:
 	void draw(Deck& d);
 	void print();
 	void reset();
+
+	bool raiseTurn;
 
 private:
 	void bet(int amt);

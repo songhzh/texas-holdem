@@ -5,11 +5,21 @@ namespace ps
 	void help(std::string input)
 	{
 		if (input == "")
-			std::cout << "Commands:\n-help\n-info\n-check\n-call\n-raise\n-all in\n-fold\nEnter 'help [command]' for more info" << std::endl;
+			std::cout << "Commands:\n-help\n-info\n-check\n-call\n-raise\n-all in\n-fold\n"
+			"Enter 'help [command]' for more info" << std::endl;
 		else if (input == "help")
 			std::cout << "Displays a list of commands. Enter a command for more info." << std::endl;
 		else if (input == "info")
-			std::cout << "Displays information about yourself and the current game." << std::endl;
+			std::cout << "Displays information about yourself and the current game.\n"
+			"Community : 3-5 cards that are shared among players.\n"
+			"Your hole : 2 private 'hole' cards make up your hand.\n"
+			"Your bets : Money that you have contributed to the pot this game.\n"
+			"Your free : Money that you have remaining.\n"
+			"Your total: Sum of your bets and free money.\n"
+			"Min match : Minimum amount that you must match (call) in order to stay in the game.\n"
+			"Min raise : Minimum amount that you must raise by, if you choose to do so.\n"
+			"Min total : Minimum amount that 'your bets' will be, if you choose to raise.\n"
+			"Crnt pot  : Sum of all bets that players have made this game." << std::endl;
 		else if (input == "check" || input == "wait")
 			std::cout << "Wait on the next player.\nThis can only be done if no players have made a move this round,\n"
 			"or you played first this round and have matched the bet." << std::endl;
@@ -39,6 +49,7 @@ namespace ps
 		gm->current->print();
 		std::cout << "Min match : $" << gm->minMatch << std::endl;
 		std::cout << "Min raise : $" << gm->minRaise << std::endl;
+		std::cout << "Min total : $" << gm->minMatch + gm->minRaise << std::endl;
 		std::cout << "Crnt pot  : $" << gm->pot << std::endl;
 	}
 
@@ -84,6 +95,8 @@ namespace ps
 				gm->canCheck = false;
 				return true;
 			}
+			else
+				return false;
 		}
 		else if (sf::isInt(input))
 		{
@@ -92,8 +105,10 @@ namespace ps
 				gm->canCheck = false;
 				return true;
 			}
+			else
+				return false;
 		}
-		std::cout << "Error. cannot raise." << std::endl;
+		std::cout << "Error. Cannot raise." << std::endl;
 		return false;
 	}
 
@@ -103,7 +118,7 @@ namespace ps
 			return false;
 		if (!gm->current->raise(gm->minMatch, gm->minRaise, gm->current->getMoneyTotal()))
 		{
-			std::cout << "Error. You did not meet the requirements." << std::endl;
+			std::cout << "Error. You do not meet the requirements." << std::endl;
 			return false;
 		}
 		gm->canCheck = false;

@@ -50,6 +50,11 @@ bool Player::hasMatched(int minMatch)
 		return money_bet == minMatch;
 }
 
+bool Player::cannotRaise(int minRaise)
+{
+	return money_bet + minRaise > money_total;
+}
+
 void Player::bet(int amt)
 {
 	money_bet += amt;
@@ -67,7 +72,10 @@ void Player::call(int minMatch)
 bool Player::raise(int& minMatch, int& minRaise)
 {
 	if (money_total < minMatch + minRaise)
+	{
+		std::cout << "You do not meet the minimum raise amount." << std::endl;
 		return false;
+	}
 	std::cout << "Your bets : $" << money_bet << std::endl;
 	std::cout << "Your free : $" << money_free << std::endl;
 	std::cout << "Min raise : $" << minRaise << std::endl;
@@ -75,7 +83,7 @@ bool Player::raise(int& minMatch, int& minRaise)
 	int match = sf::getInt(1, money_total);
 	if (match - minMatch < minRaise)
 	{
-		std::cout << "You did not meet the minimum raise amount." << std::endl;
+		std::cout << "You do not meet the minimum raise amount." << std::endl;
 		return false;
 	}
 	minRaise = match - minMatch;
@@ -86,11 +94,9 @@ bool Player::raise(int& minMatch, int& minRaise)
 
 bool Player::raise(int& minMatch, int& minRaise, int amt)
 {
-	if (money_total < minMatch + minRaise)
-		return false;
-	if (amt - minMatch < minRaise)
+	if (money_total < minMatch + minRaise || amt - minMatch < minRaise)
 	{
-		std::cout << "You did not meet the minimum raise amount." << std::endl;
+		std::cout << "You do not meet the minimum raise amount." << std::endl;
 		return false;
 	}
 	minRaise = amt - minMatch;
@@ -116,7 +122,7 @@ void Player::draw(Deck& d)
 
 void Player::print()
 {
-	std::cout << "Your hand : ";
+	std::cout << "Your hole : ";
 	for (auto it : hole)
 		std::cout << it.getName() << " ";
 	std::cout << std::endl;
@@ -131,4 +137,5 @@ void Player::reset()
 	money_total = money_free;
 	folded = false;
 	hole.clear();
+	raiseTurn = false;
 }

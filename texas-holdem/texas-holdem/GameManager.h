@@ -11,8 +11,8 @@ public:
 	~GameManager();
 	void newGame();
 	int getAllPlayers();
-	int getFoldedPlayers();
-	int getMatchedMaxPlayers();
+	int getNotFoldedPlayers();
+	int getMovesPlayers();
 	void dealPlayerCards(int num);
 	void dealCommunityCards(int num);
 	void blindContainer(std::string rname);

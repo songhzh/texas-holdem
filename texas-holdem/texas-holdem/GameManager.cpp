@@ -28,7 +28,7 @@ int GameManager::getAllPlayers()
 	return players.size();
 }
 
-int GameManager::getFoldedPlayers()
+int GameManager::getNotFoldedPlayers()
 {
 	int num = players.size();
 	for (auto it : players)
@@ -37,11 +37,11 @@ int GameManager::getFoldedPlayers()
 	return num;
 }
 
-int GameManager::getMatchedMaxPlayers()
+int GameManager::getMovesPlayers()
 {
 	int num = players.size();
 	for (auto it : players)
-		if (it.getMoneyFree() == 0)
+		if (it.getMoneyFree() == 0 || it.cannotRaise(minRaise))
 			num--;
 	return num;
 }
@@ -75,17 +75,25 @@ void GameManager::blindContainer(std::string rname)
 
 void GameManager::roundContainer(std::string rname1, std::string rname2)
 {
-	if (getFoldedPlayers() == 1 || getMatchedMaxPlayers() == 0)
+	if (getNotFoldedPlayers() == 1 || getMovesPlayers() == 0)
 		return;
 
 	std::cout << rname1;
+	int notInRoundFailsafe = 0; // extra precaution
 	while (continueRound())
 	{
 		if (!current->inRound())
+		{
+			notInRoundFailsafe++;
+			if (notInRoundFailsafe > players.size())
+				break;
+			nextPlayer();
 			continue;
+		}
 		std::cout << rname2 << std::endl;
 		std::cout << current->getName() + " turn." << std::endl;
 		ps::parseRound(this);
+		current->raiseTurn = true;
 		nextPlayer();
 	}
 	currentIdx = getActivePlayerIdx(0);
@@ -93,6 +101,8 @@ void GameManager::roundContainer(std::string rname1, std::string rname2)
 	firstIdx = getActivePlayerIdx(0);
 	canCheck = true;
 	minRaise = bigBlind;
+	for (auto& it : players)
+		it.raiseTurn = false;
 }
 
 void GameManager::getWinner()
@@ -123,11 +133,11 @@ int GameManager::getActivePlayerIdx(int offset)
 
 bool GameManager::continueRound()
 {
-	if (getFoldedPlayers() == 1 || getMatchedMaxPlayers() == 0)
+	if (getNotFoldedPlayers() == 1 || getMovesPlayers() == 0)
 		return false;
-	if (canCheck || current->getMoneyBet() < minMatch || !allPlayersPlayed())
+	if (canCheck || current->getMoneyBet() < minMatch)
 		return true;
-	return currentIdx == firstIdx;
+	return !allPlayersPlayed();
 }
 
 bool GameManager::allPlayersPlayed()
@@ -136,7 +146,7 @@ bool GameManager::allPlayersPlayed()
 	{
 		if (!it.inRound())
 			continue;
-		else if (!it.hasMatched(minMatch))
+		else if (!it.raiseTurn)
 			return false;
 	}
 	return true;
