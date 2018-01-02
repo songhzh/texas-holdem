@@ -4,6 +4,7 @@
 
 Player::Player(std::string n, int m_f) : name(n), money_free(m_f)
 {
+	money_bet = 0;
 	reset();
 }
 
@@ -14,17 +15,12 @@ Player::~Player()
 
 std::string Player::getName()
 {
-	return name;
+	return "<" + name + ">";
 }
 
 std::vector<Card> Player::getHole()
 {
 	return hole;
-}
-
-bool Player::getFolded()
-{
-	return folded;
 }
 
 int Player::getMoneyBet()
@@ -55,6 +51,11 @@ bool Player::cannotRaise(int minRaise)
 	return money_bet + minRaise > money_total;
 }
 
+bool Player::inRound()
+{
+	return (!folded) && (money_bet != money_free);
+}
+
 void Player::bet(int amt)
 {
 	money_bet += amt;
@@ -80,7 +81,7 @@ bool Player::raise(int& minMatch, int& minRaise)
 	std::cout << "Your free : $" << money_free << std::endl;
 	std::cout << "Min raise : $" << minRaise << std::endl;
 	std::cout << "Min total : $" << minMatch + minRaise << std::endl;
-	int match = sf::getInt(1, money_total);
+	int match = sf::getInt(1, money_total, "$");
 	if (match - minMatch < minRaise)
 	{
 		std::cout << "You do not meet the minimum raise amount." << std::endl;
@@ -105,14 +106,16 @@ bool Player::raise(int& minMatch, int& minRaise, int amt)
 	return true;
 }
 
-void Player::fold()
+void Player::transfer(Player* target, int num)
 {
-	folded = true;
-}
-
-bool Player::inRound()
-{
-	return (!folded) && (money_bet != money_free);
+	if (winner)
+		return;
+		
+	if (money_transfer == -1)
+		money_transfer = money_bet / num;
+	int amt = target->money_bet < money_transfer ? target->money_bet : money_transfer;
+	target->money_bet += amt;
+	money_bet -= amt;
 }
 
 void Player::draw(Deck& d)
@@ -133,9 +136,13 @@ void Player::print()
 
 void Player::reset()
 {
+	money_free += money_bet;
 	money_bet = 0;
 	money_total = money_free;
-	folded = false;
 	hole.clear();
+	money_transfer = -1;
+	folded = false;
 	raiseTurn = false;
+	score[4] = { 0 };
+	winner = false;
 }

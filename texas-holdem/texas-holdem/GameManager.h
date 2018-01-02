@@ -16,7 +16,7 @@ public:
 	void dealPlayerCards(int num);
 	void dealCommunityCards(int num);
 	void blindContainer(std::string rname);
-	void roundContainer(std::string rname1, std::string rname2);
+	void roundContainer(std::string rname);
 	void getWinner();
 	void nextPlayer();
 	int getActivePlayerIdx(int offset);
@@ -34,7 +34,7 @@ public:
 	int pot;
 	int gameIdx;
 	int roundIdx; // index of small blind; dealer is ignored
-	int firstIdx; // starts at big blind for pre-flop, and small blind for others
+	int firstIdx; // starts at big blind for pre-flop, and small blind for rest
 	int currentIdx;
 	Player* current;
 	bool canCheck;

@@ -98,9 +98,9 @@ namespace ps
 			else
 				return false;
 		}
-		else if (sf::isInt(input))
+		else if (sf::makeInt(input) != -1)
 		{
-			if (gm->current->raise(gm->minMatch, gm->minRaise, atoi(input.c_str())))
+			if (gm->current->raise(gm->minMatch, gm->minRaise, sf::makeInt(input)))
 			{
 				gm->canCheck = false;
 				return true;
@@ -129,7 +129,7 @@ namespace ps
 	{
 		if (sf::noAdditionalCommands(input, "fold"))
 			return false;
-		gm->current->fold();
+		gm->current->folded = true;
 		return true;
 	}
 
@@ -139,7 +139,7 @@ namespace ps
 		do
 		{
 			std::string input;
-			sf::getString(input);
+			sf::getString(input, "");
 			
 			if (sf::findString(input, "help"))
 				help(input);

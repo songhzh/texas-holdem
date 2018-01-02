@@ -13,24 +13,26 @@ public:
 
 	std::string getName();
 	std::vector<Card> getHole();
-	bool getFolded();
 	int getMoneyBet();
 	int getMoneyFree();
 	int getMoneyTotal();
 	bool hasMatched(int minMatch);
 	bool cannotRaise(int minRaise);
+	bool inRound();
 
 	void call(int minMatch);
 	bool raise(int& minMatch, int& minRaise);
 	bool raise(int& minMatch, int& minRaise, int amt);
-	void fold();
-	bool inRound();
-
+	void transfer(Player* target, int num);
+	
 	void draw(Deck& d);
 	void print();
 	void reset();
 
+	bool folded;
 	bool raiseTurn;
+	int score[6];
+	bool winner;
 
 private:
 	void bet(int amt);
@@ -39,7 +41,7 @@ private:
 	int money_free;
 	int money_bet;
 	int money_total;
-	bool folded;
 	std::vector<Card> hole;
+	int money_transfer;
 };
 

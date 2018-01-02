@@ -13,23 +13,26 @@ namespace sf
 		return false;
 	}
 
-	bool isInt(std::string s)
+	bool rmNoneNumeric(char c)
 	{
-		for (auto it : s)
-			if (it < '0' || it > '9')
-				return false;
-		return true;
+		return c < '0' || c > '9';
 	}
 
-	int getInt(int min, int max)
+	int makeInt(std::string s)
 	{
-		std::string s;
+		s.erase(std::remove_if(s.begin(), s.end(), rmNoneNumeric), s.end());
+		return s.length() == 0 ? -1 : atoi(s.c_str());
+	}
+
+	int getInt(int min, int max, std::string s)
+	{
+		std::string input;
 		int num;
 		do
 		{
-			getString(s, "$");
-			num = atoi(s.c_str());
-		} while (!isInt(s) || num < min || num > max);
+			getString(input, s);
+			num = makeInt(input);
+		} while (num < min || num > max);
 
 		return num;
 	}
@@ -46,17 +49,9 @@ namespace sf
 				it -= 'A' - 'a';
 	}
 
-	void getString(std::string& input)
-	{
-		std::cout << ">";
-		std::getline(std::cin, input);
-		rmWhiteSpace(input);
-		lowerString(input);
-	}
-
 	void getString(std::string& input, std::string s)
 	{
-		std::cout << ">" << s;
+		std::cout << ">" + s;
 		std::getline(std::cin, input);
 		rmWhiteSpace(input);
 		lowerString(input);
@@ -70,5 +65,17 @@ namespace sf
 			return true;
 		}
 		return false;
+	}
+
+	void clearScreen()
+	{
+		std::cout << std::flush;
+		if (system("cls"))
+			system("clear");
+	}
+
+	void line()
+	{
+		
 	}
 }
