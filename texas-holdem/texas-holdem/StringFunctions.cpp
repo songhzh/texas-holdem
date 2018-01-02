@@ -79,7 +79,7 @@ namespace sf
 
 	void confirm()
 	{
-		std::cout << std::endl << "Continuing...";
+		std::cout << std::endl << "Press 'enter' to continue.";
 		std::string s;
 		getline(std::cin, s);
 	}
