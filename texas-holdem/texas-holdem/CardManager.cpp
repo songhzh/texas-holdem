@@ -45,7 +45,7 @@ namespace cm
 		{
 			std::cout << hand[i].getName() + " ";
 		}
-		std::cout << std::endl;
+		std::cout << std::endl << std::endl;
 	}
 
 	bool hasMoveFront(std::vector<Card>& hand, int r, int& idx)

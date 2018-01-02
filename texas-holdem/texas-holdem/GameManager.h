@@ -16,17 +16,19 @@ public:
 	void dealPlayerCards(int num);
 	void dealCommunityCards(int num);
 	void blindContainer(std::string rname);
-	void roundContainer(std::string rname);
+	void roundContainer(std::string rname1, std::string rname2);
 	void getWinner();
 	void nextPlayer();
 	int getActivePlayerIdx(int offset);
 	bool continueRound();
 	bool allPlayersPlayed();
+	bool allPlayersMatched();
 	void updatePot();
 	void reset();
 
 	std::vector<Player> players;
 	std::vector<Card> community;
+	std::vector<std::string> log;
 	Deck deck;
 	int bigBlind;
 	int minMatch;

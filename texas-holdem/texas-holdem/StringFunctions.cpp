@@ -20,6 +20,9 @@ namespace sf
 
 	int makeInt(std::string s)
 	{
+		for (auto it : s)
+			if (it == '-' || it == '.')
+				return false;
 		s.erase(std::remove_if(s.begin(), s.end(), rmNoneNumeric), s.end());
 		return s.length() == 0 ? -1 : atoi(s.c_str());
 	}
@@ -74,8 +77,10 @@ namespace sf
 			system("clear");
 	}
 
-	void line()
+	void confirm()
 	{
-		
+		std::cout << std::endl << "Continuing...";
+		std::string s;
+		getline(std::cin, s);
 	}
 }

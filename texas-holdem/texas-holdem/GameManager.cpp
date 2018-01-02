@@ -16,19 +16,50 @@ GameManager::~GameManager()
 {
 }
 
+bool hasRepeatName(std::vector<Player> players, std::string name)
+{
+	Player temp(name, -1);
+	for (auto it : players)
+		if (it.getName() == temp.getName())
+		{
+			std::cout << "Someone has already picked that name!" << std::endl;
+			return true;
+		}
+			
+	return false;
+}
+
 void GameManager::newGame()
 {
-	std::cout << "Texa$ hold'em!" << std::endl;
+	std::cout << "Welcome to <Texa$ hold'em!>" << std::endl << std::endl;
 
 	std::cout << "How many will be playing? (2-10)" << std::endl;
 	int playerNum = sf::getInt(2, 10, "");
+	std::cout << std::endl;
 	std::cout << "What will be the starting money? ($100-$1,000,000)" << std::endl;
 	int startingMoney = sf::getInt(100, 1000000, "$");
+	std::cout << std::endl;
+	for (int i = 1; i <= playerNum; i++)
+	{
+		std::cout << "Player " << i << " name?" << std::endl;
+		std::string playerName;
+		do
+		{
+			sf::getString(playerName, "");
+		} while (playerName == "" || hasRepeatName(players, playerName));
+		
+		players.push_back(Player(playerName, startingMoney));
+		std::cout << std::endl;
+	}
+	std::cout << "All players accounted for.";
+
+	sf::confirm();
+	sf::clearScreen();
+	/*
 	players.push_back(Player("a", 100));
 	players.push_back(Player("b", 100));
 	players.push_back(Player("c", 100));
-	players.push_back(Player("d", 100));
-	sf::clearScreen();
+	*/
 }
 
 int GameManager::getAllPlayers()
@@ -69,19 +100,25 @@ void GameManager::dealCommunityCards(int num)
 
 void GameManager::blindContainer(std::string rname)
 {
-	std::cout << rname + ", " + current->getName() + " turn." << std::endl;
-	while (!current->raise(minMatch, minRaise)) {}
+	std::cout << "[" + rname + ", " + current->getName() + " turn]" << std::endl;
+	std::cout << "You must raise during a blind." << std::endl << std::endl;
+	if (current->getMoneyFree() <= minMatch + minRaise)
+		current->call(minMatch);
+	else
+		while (!current->raise(minMatch, minRaise)) {}
 	nextPlayer();
-	if (rname == "Big blind")
+	if (rname == "BIG BLIND")
 	{
 		bigBlind = minMatch;
 		minRaise = minMatch;
 		firstIdx = getActivePlayerIdx(1);
 	}
+
+	sf::confirm();
 	sf::clearScreen();
 }
 
-void GameManager::roundContainer(std::string rname)
+void GameManager::roundContainer(std::string rname1, std::string rname2)
 {
 	if (getNotFoldedPlayers() == 1 || getMovesPlayers() == 0)
 		return;
@@ -97,10 +134,18 @@ void GameManager::roundContainer(std::string rname)
 			nextPlayer();
 			continue;
 		}
-		std::cout << rname + ", " + current->getName() + " turn." << std::endl;
+
+		std::cout << "[" + rname1 + ", " + current->getName() + " turn]" << std::endl;
+		if (current->newCard && rname1 != "PRE-FLOP")
+		{
+			std::cout << "The " + rname2 + " card has been dealt!" << std::endl;
+			current->newCard = false;
+		}
+
 		ps::parseRound(this);
 		current->raiseTurn = true;
 		nextPlayer();
+		sf::confirm();
 		sf::clearScreen();
 	}
 	currentIdx = getActivePlayerIdx(0);
@@ -109,20 +154,38 @@ void GameManager::roundContainer(std::string rname)
 	canCheck = true;
 	minRaise = bigBlind;
 	for (auto& it : players)
+	{
 		it.raiseTurn = false;
+		it.newCard = true;
+	}
+}
+
+bool playersRm(Player p)
+{
+	if (p.getMoneyTotal() == 0)
+	{
+		std::cout << p.getName() + " has been eliminated." << std::endl;
+		return true;
+	}
+	return false;
 }
 
 void GameManager::getWinner()
 {
-	std::cout << "Showdown." << std::endl;
+	std::cout << "[SHOWDOWN]" << std::endl;
+	if (getNotFoldedPlayers() == 1)
+		std::cout << "Default!" << std::endl;
+	else if (getMovesPlayers() == 0)
+		std::cout << "No possible moves!" << std::endl;
+	std::cout << std::endl;
+
 	std::vector<Player*> eligible;
 
 	for (auto& it : players)
 	{
-		if (it.folded)
-			continue;
-		eligible.push_back(&it);
 		cm::getBestHand(it, community, it.score);
+		if (!it.folded)
+			eligible.push_back(&it);
 	}
 	
 	for (int i = 0; i < 6; i++)
@@ -142,7 +205,7 @@ void GameManager::getWinner()
 	}
 
 	if (eligible.size() == 1)
-		std::cout << "The winner is: " + eligible.front()->getName() << std::endl;
+		std::cout << "The winner is: " + eligible.front()->getName();
 	else
 	{
 		std::cout << "Tie! The winners are: ";
@@ -154,19 +217,23 @@ void GameManager::getWinner()
 			if (it < eligible.end() - 2)
 				std::cout << ", ";
 		}
-		std::cout << std::endl;
 	}
-		
+	std::cout << "!" << std::endl;
 
 	for (auto& it : eligible)
 	{
 		it->winner = true;
 	}
 		
-
 	for (auto& all : players)
 		for (auto& win : eligible)
 			all.transfer(win, eligible.size());
+
+	for (auto& it : players)
+		it.reset();
+	players.erase(std::remove_if(players.begin(), players.end(), playersRm), players.end());
+
+	sf::confirm();
 	sf::clearScreen();
 }
 
@@ -179,7 +246,7 @@ void GameManager::nextPlayer()
 
 int GameManager::getActivePlayerIdx(int offset)
 {
-	int idx = roundIdx + offset;
+	int idx = (roundIdx + offset) % players.size();
 	while (!players[idx].inRound())
 		idx = (idx + 1) % players.size();
 	return idx;
@@ -206,6 +273,14 @@ bool GameManager::allPlayersPlayed()
 	return true;
 }
 
+bool GameManager::allPlayersMatched()
+{
+	for (auto it : players)
+		if (!it.hasMatched(minMatch))
+			return false;
+	return true;
+}
+
 void GameManager::updatePot()
 {
 	pot = 0;
@@ -213,17 +288,10 @@ void GameManager::updatePot()
 		pot += it.getMoneyBet();
 }
 
-bool playersRm(Player p)
-{
-	return p.getMoneyTotal() == 0;
-}
-
 void GameManager::reset()
 {
-	for (auto& it : players)
-		it.reset();
-	players.erase(std::remove_if(players.begin(), players.end(), playersRm), players.end());
 	community.clear();
+	log.clear();
 	deck = Deck();
 	deck.shuffle();
 	bigBlind = 0;

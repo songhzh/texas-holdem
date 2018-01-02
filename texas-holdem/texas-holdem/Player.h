@@ -23,6 +23,7 @@ public:
 	void call(int minMatch);
 	bool raise(int& minMatch, int& minRaise);
 	bool raise(int& minMatch, int& minRaise, int amt);
+	bool all_in(int& minMatch, int& minRaise);
 	void transfer(Player* target, int num);
 	
 	void draw(Deck& d);
@@ -31,6 +32,7 @@ public:
 
 	bool folded;
 	bool raiseTurn;
+	bool newCard;
 	int score[6];
 	bool winner;
 

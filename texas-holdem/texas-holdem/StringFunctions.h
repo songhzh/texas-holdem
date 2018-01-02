@@ -13,5 +13,6 @@ namespace sf
 	bool findString(std::string& input, std::string s);
 
 	void clearScreen();
+	void confirm();
 }
 

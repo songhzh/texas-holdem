@@ -84,7 +84,7 @@ bool Player::raise(int& minMatch, int& minRaise)
 	int match = sf::getInt(1, money_total, "$");
 	if (match - minMatch < minRaise)
 	{
-		std::cout << "You do not meet the minimum raise amount." << std::endl;
+		std::cout << "The amount was not enough." << std::endl;
 		return false;
 	}
 	minRaise = match - minMatch;
@@ -95,14 +95,35 @@ bool Player::raise(int& minMatch, int& minRaise)
 
 bool Player::raise(int& minMatch, int& minRaise, int amt)
 {
-	if (money_total < minMatch + minRaise || amt - minMatch < minRaise)
+	if (money_total < minMatch + minRaise)
 	{
 		std::cout << "You do not meet the minimum raise amount." << std::endl;
+		return false;
+	}
+	else if (amt - minMatch < minRaise)
+	{
+		std::cout << "The amount was not enough." << std::endl;
 		return false;
 	}
 	minRaise = amt - minMatch;
 	minMatch = amt;
 	call(minMatch);
+	return true;
+}
+
+bool Player::all_in(int& minMatch, int& minRaise)
+{
+	if (money_total <= minMatch)
+	{
+		std::cout << "You call using all of your money." << std::endl;
+		call(minMatch);
+	}
+	else
+	{
+		minRaise = money_total - minMatch;
+		minMatch = money_total;
+		call(money_total);
+	}
 	return true;
 }
 
@@ -143,6 +164,7 @@ void Player::reset()
 	money_transfer = -1;
 	folded = false;
 	raiseTurn = false;
+	newCard = true;
 	score[4] = { 0 };
 	winner = false;
 }
