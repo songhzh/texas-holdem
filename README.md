@@ -1,13 +1,9 @@
-# texas-holdem
+# <Texa$ hold'em>
 A console-based poker simulator!
 
-This game is intended to be played on a laptop which is passed around a group of 2 or more players.
+This game is intended to be played on a laptop which is passed around a group of 2 or more players. Since the role of the dealer is made redunant by the the program, it does not exist in this version of the game.
 
-Since the role of the dealer is made redunant by the the program, it does not exist in this version of the game.
-
-To play the game, enter [command] [parameter]. For example, 'raise $20'.
-
-For a list of commands, enter 'help'. Note that some commands do not have parameters.
+To play the game, enter [command] [parameter]. For example, 'raise $20'. For a list of commands, enter 'help'. Note that some commands do not have parameters.
 
 # Abridged rules of Texas hold'em
 In this example, there will be 4 players named A, B, C, D.
