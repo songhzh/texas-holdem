@@ -48,12 +48,12 @@ bool Player::hasMatched(int minMatch)
 
 bool Player::cannotRaise(int minRaise)
 {
-	return money_bet + minRaise > money_total;
+	return money_bet + minRaise > money_total && hasMatched(minRaise);
 }
 
 bool Player::inRound()
 {
-	return (!folded) && (money_bet != money_free);
+	return (!folded) && (money_free != 0);
 }
 
 void Player::bet(int amt)

@@ -55,11 +55,12 @@ void GameManager::newGame()
 
 	sf::confirm();
 	sf::clearScreen();
-	/*
-	players.push_back(Player("a", 100));
-	players.push_back(Player("b", 100));
-	players.push_back(Player("c", 100));
-	*/
+	
+	
+	//players.push_back(Player("a", 100));
+	//players.push_back(Player("b", 100));
+	//players.push_back(Player("c", 100));
+	
 }
 
 int GameManager::getAllPlayers()
@@ -247,8 +248,9 @@ void GameManager::nextPlayer()
 int GameManager::getActivePlayerIdx(int offset)
 {
 	int idx = (roundIdx + offset) % players.size();
-	while (!players[idx].inRound())
-		idx = (idx + 1) % players.size();
+	for (auto it : players)
+		if (!players[idx].inRound())
+			idx = (idx + 1) % players.size();
 	return idx;
 }
 
@@ -256,7 +258,13 @@ bool GameManager::continueRound()
 {
 	if (getNotFoldedPlayers() == 1 || getMovesPlayers() == 0)
 		return false;
-	if (canCheck || current->getMoneyBet() < minMatch)
+	else if (getMovesPlayers() == 1)
+		for (auto it : players)
+		{
+			if (it.getMoneyFree() != 0 && !it.cannotRaise(minRaise))
+				return !it.hasMatched(minMatch);
+		}
+	else if (canCheck || current->getMoneyBet() < minMatch)
 		return true;
 	return !allPlayersPlayed();
 }
