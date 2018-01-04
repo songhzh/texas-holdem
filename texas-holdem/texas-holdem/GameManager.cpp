@@ -272,11 +272,12 @@ bool GameManager::continueRound()
 
 bool GameManager::allPlayersPlayed()
 {
-	if (canCheck)
-		return false;
 	for (auto it : players)
-		if (it.isActive() && (!it.raiseTurn || !it.hasMatched(minMatch)))
-			return false;	
+		if (it.isActive() && !it.hasMatched(minMatch))
+			return false;
+	for (auto it : players)
+		if (it.isActive() && !it.raiseTurn)
+			return false;
 	return true;
 }
 

@@ -72,19 +72,28 @@ namespace ps
 	{
 		if (sf::noAdditionalCommands(input, "check"))
 			return false;
+		if (gm->current->cannotRaise(gm->minMatch, gm->minRaise) && gm->current->hasMatched(gm->minMatch))
+		{
+			gm->current->raiseTurn = true;
+			return true;
+		}
+		else if (gm->currentIdx == gm->firstIdx && gm->current->getMoneyBet() == gm->minMatch)
+			return true;
+
 		if (gm->canCheck)
 			return true;
-		if (gm->currentIdx == gm->firstIdx && gm->current->getMoneyBet() == gm->minMatch)
-			return true;
-		std::cout << "A bet has been made. You cannot check this round." << std::endl;
-		return false;
+		else
+		{
+			std::cout << "A bet has been made. You cannot check this round." << std::endl;
+			return false;
+		}
 	}
 
 	bool call(std::string input, GameManager* gm)
 	{
 		if (sf::noAdditionalCommands(input, "call"))
 			return false;
-		if (gm->canCheck)
+		if (gm->canCheck && gm->current->hasMatched(gm->minMatch))
 		{
 			std::cout << "To pass your turn, enter 'check'." << std::endl;
 			return false;
@@ -103,6 +112,8 @@ namespace ps
 		if (gm->current->cannotRaise(gm->minMatch, gm->minRaise))
 		{
 			std::cout << "You do not meet the minimum raise amount, but you may go all-in." << std::endl;
+			if (gm->current->hasMatched(gm->minMatch))
+				std::cout << "You may also check if you do not wish to do so." << std::endl;
 			return false;
 		}
 		if (input == "")
