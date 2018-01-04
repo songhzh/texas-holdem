@@ -42,7 +42,19 @@ namespace sf
 
 	void rmWhiteSpace(std::string& s)
 	{
-
+		for (int i = 0; i < s.length(); i++)
+			if (s[i] != ' ')
+			{
+				s = s.substr(i);
+				break;
+			}
+		for (int i = s.length() - 1; i >= 0; i--)
+		{
+			if (s[i] == ' ')
+				s.pop_back();
+			else
+				return;
+		}
 	}
 
 	void lowerString(std::string& s)
@@ -62,12 +74,13 @@ namespace sf
 
 	bool findString(std::string& input, std::string s)
 	{
-		if (input.find(s) == 0)
-		{
-			input.erase(0, s.length() + 1);
-			return true;
-		}
-		return false;
+		for (int i = 0; i < s.length(); i++)
+			if (input[i] != s[i])
+				return false;
+		if (input.length() > s.length() && input[s.length()] != ' ')
+			return false;
+		input.erase(0, s.length() + 1);
+		return true;
 	}
 
 	void clearScreen()

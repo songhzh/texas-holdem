@@ -31,6 +31,7 @@ bool hasRepeatName(std::vector<Player> players, std::string name)
 
 void GameManager::newGame()
 {
+	
 	std::cout << "Welcome to <Texa$ hold'em!>" << std::endl << std::endl;
 	
 	std::cout << "How many will be playing? (2-10)" << std::endl;
@@ -56,9 +57,9 @@ void GameManager::newGame()
 	sf::confirm();
 	sf::clearScreen();
 	
-	
-	//players.push_back(Player("a", 100));
-	//players.push_back(Player("b", 100));
+
+	//players.push_back(Player("a", 10));
+	//players.push_back(Player("b", 2));
 	//players.push_back(Player("c", 100));
 	
 }
