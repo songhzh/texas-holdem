@@ -32,7 +32,7 @@ bool hasRepeatName(std::vector<Player> players, std::string name)
 void GameManager::newGame()
 {
 	std::cout << "Welcome to <Texa$ hold'em!>" << std::endl << std::endl;
-
+	
 	std::cout << "How many will be playing? (2-10)" << std::endl;
 	int playerNum = sf::getInt(2, 10, "");
 	std::cout << std::endl;
@@ -68,6 +68,16 @@ int GameManager::getAllPlayers()
 	return players.size();
 }
 
+int GameManager::getActivePlayers()
+{
+	int num = players.size();
+	for (auto it : players)
+		if (it.folded || it.getMoneyFree() == 0)
+			num--;
+	return num;
+}
+
+/*
 int GameManager::getNotFoldedPlayers()
 {
 	int num = players.size();
@@ -85,7 +95,7 @@ int GameManager::getMovesPlayers()
 			num--;
 	return num;
 }
-
+*/
 void GameManager::dealPlayerCards(int num)
 {
 	for (int i = 0; i < num; i++)
@@ -103,55 +113,45 @@ void GameManager::blindContainer(std::string rname)
 {
 	std::cout << "[" + rname + ", " + current->getName() + " turn]" << std::endl;
 	std::cout << "You must raise during a blind." << std::endl << std::endl;
-	if (current->getMoneyFree() <= minMatch + minRaise)
+	if (current->cannotRaise(minMatch, minRaise))
 		current->call(minMatch);
 	else
 		while (!current->raise(minMatch, minRaise)) {}
-	nextPlayer();
 	if (rname == "BIG BLIND")
 	{
 		bigBlind = minMatch;
 		minRaise = minMatch;
-		firstIdx = getActivePlayerIdx(1);
+		firstIdx = currentIdx;
 	}
-
+	nextPlayer(currentIdx);
 	sf::confirm();
 	sf::clearScreen();
 }
 
 void GameManager::roundContainer(std::string rname1, std::string rname2)
 {
-	if (getNotFoldedPlayers() == 1 || getMovesPlayers() == 0)
+	if (rname1 != "PRE-FLOP")
+		log.push_back("The " + rname2 + (rname1 == "FLOP" ? " cards " : " card ") + "has been dealt!");
+	if (getActivePlayers() == 0)
 		return;
-
-	unsigned int notInRoundFailsafe = 0; // extra precaution
 	while (continueRound())
 	{
-		if (!current->inRound())
-		{
-			notInRoundFailsafe++;
-			if (notInRoundFailsafe > players.size())
-				break;
-			nextPlayer();
-			continue;
-		}
-
 		std::cout << "[" + rname1 + ", " + current->getName() + " turn]" << std::endl;
 		if (current->newCard && rname1 != "PRE-FLOP")
 		{
-			std::cout << "The " + rname2 + " card has been dealt!" << std::endl;
+			std::cout << "The " + rname2 + (rname1 == "FLOP" ? " cards " : " card ") + "has been dealt!" << std::endl;
 			current->newCard = false;
 		}
-
 		ps::parseRound(this);
-		current->raiseTurn = true;
-		nextPlayer();
+		if (!canCheck)
+			current->raiseTurn = true;
+		nextPlayer(currentIdx);
+		updatePot();
 		sf::confirm();
 		sf::clearScreen();
 	}
-	currentIdx = getActivePlayerIdx(0);
-	current = &players[getActivePlayerIdx(0)];
-	firstIdx = getActivePlayerIdx(0);
+	nextPlayer(-1);
+	firstIdx = currentIdx;
 	canCheck = true;
 	minRaise = bigBlind;
 	for (auto& it : players)
@@ -174,10 +174,12 @@ bool playersRm(Player p)
 void GameManager::getWinner()
 {
 	std::cout << "[SHOWDOWN]" << std::endl;
+	/*
 	if (getNotFoldedPlayers() == 1)
 		std::cout << "Default!" << std::endl;
 	else if (getMovesPlayers() == 0)
 		std::cout << "No possible moves!" << std::endl;
+		*/
 	std::cout << std::endl;
 
 	std::vector<Player*> eligible;
@@ -238,46 +240,43 @@ void GameManager::getWinner()
 	sf::clearScreen();
 }
 
-void GameManager::nextPlayer()
+void GameManager::nextPlayer(int idx)
 {
-	currentIdx = (currentIdx + 1) % players.size();
+	currentIdx = getNextActivePlayerIdx(idx);
 	current = &players[currentIdx];
 	updatePot();
 }
 
-int GameManager::getActivePlayerIdx(int offset)
+int GameManager::getNextActivePlayerIdx(int idx)
 {
-	int idx = (roundIdx + offset) % players.size();
+	idx = (idx + 1) % players.size();
 	for (auto it : players)
-		if (!players[idx].inRound())
+		if (!players[idx].isActive())
 			idx = (idx + 1) % players.size();
 	return idx;
 }
 
 bool GameManager::continueRound()
 {
-	if (getNotFoldedPlayers() == 1 || getMovesPlayers() == 0)
+	if (getActivePlayers() == 0)
 		return false;
-	else if (getMovesPlayers() == 1)
+	else if (getActivePlayers() == 1)
+	{
 		for (auto it : players)
-		{
-			if (it.getMoneyFree() != 0 && !it.cannotRaise(minRaise))
+			if (!it.folded && it.getMoneyFree() != 0)
 				return !it.hasMatched(minMatch);
-		}
-	else if (canCheck || current->getMoneyBet() < minMatch)
-		return true;
-	return !allPlayersPlayed();
+	}
+	else
+		return !allPlayersPlayed();
 }
 
 bool GameManager::allPlayersPlayed()
 {
+	if (canCheck)
+		return false;
 	for (auto it : players)
-	{
-		if (!it.inRound())
-			continue;
-		else if (!it.raiseTurn)
-			return false;
-	}
+		if (it.isActive() && (!it.raiseTurn || !it.hasMatched(minMatch)))
+			return false;	
 	return true;
 }
 

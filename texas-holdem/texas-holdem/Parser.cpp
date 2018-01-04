@@ -43,11 +43,11 @@ namespace ps
 	{
 		if (sf::noAdditionalCommands(input, "info"))
 			return;
-		if (gm->community.size() > 0) {
+		if (gm->community.size() > 0)
+		{
 			std::cout << "Community : ";
-			for (auto it : gm->community) {
+			for (auto it : gm->community)
 				std::cout << it.getName() + " ";
-			}
 			std::cout << std::endl;
 		}
 		gm->current->print();
@@ -64,12 +64,6 @@ namespace ps
 			num = gm->log.size();
 		else if (sf::makeInt(input) > 0)
 			num = sf::makeInt(input);
-		else
-		{
-			std::cout << "Error!" << std::endl;
-			return;
-		}
-			
 		for (int i = 0; i < num && gm->log.size() > i; i++)
 			std::cout << gm->log[gm->log.size() - 1 - i] << std::endl;
 	}
@@ -90,43 +84,31 @@ namespace ps
 	{
 		if (sf::noAdditionalCommands(input, "call"))
 			return false;
-		if (gm->canCheck && gm->current->getMoneyBet() == gm->minMatch)
+		if (gm->canCheck)
 		{
 			std::cout << "To pass your turn, enter 'check'." << std::endl;
 			return false;
 		}
-		if (gm->currentIdx == gm->firstIdx && gm->current->getMoneyBet() == gm->minMatch && gm->allPlayersMatched())
+		if (gm->currentIdx == gm->firstIdx && gm->allPlayersMatched())
 		{
 			std::cout << "To end the round without raising, enter 'check'." << std::endl;
 			return false;
 		}
 		gm->current->call(gm->minMatch);
-		gm->canCheck = false;
 		return true;
 	}
 
 	bool raise(std::string input, GameManager* gm)
 	{
+		if (gm->current->cannotRaise(gm->minMatch, gm->minRaise))
+		{
+			std::cout << "You do not meet the minimum raise amount, but you may go all-in." << std::endl;
+			return false;
+		}
 		if (input == "")
-		{
-			if (gm->current->raise(gm->minMatch, gm->minRaise))
-			{
-				gm->canCheck = false;
-				return true;
-			}
-			else
-				return false;
-		}
+			return gm->current->raise(gm->minMatch, gm->minRaise);
 		else if (sf::makeInt(input) != -1)
-		{
-			if (gm->current->raise(gm->minMatch, gm->minRaise, sf::makeInt(input)))
-			{
-				gm->canCheck = false;
-				return true;
-			}
-			else
-				return false;
-		}
+			return gm->current->raise(gm->minMatch, gm->minRaise, sf::makeInt(input));
 		std::cout << "Error. Cannot raise." << std::endl;
 		return false;
 	}
@@ -135,10 +117,7 @@ namespace ps
 	{
 		if (sf::noAdditionalCommands(input, "all in"))
 			return false;
-		if (!gm->current->all_in(gm->minMatch, gm->minRaise))
-			return false;
-		gm->canCheck = false;
-		return true;
+		return gm->current->all_in(gm->minMatch, gm->minRaise);
 	}
 
 	bool fold(std::string input, GameManager* gm)
@@ -168,7 +147,7 @@ namespace ps
 				if (check(input, gm))
 				{
 					gm->log.push_back("-" + gm->current->getName() + " checked.");
-					break;
+					return;
 				}
 			}
 			else if (sf::findString(input, "call") || sf::findString(input, "match"))
@@ -176,7 +155,8 @@ namespace ps
 				if (call(input, gm))
 				{
 					gm->log.push_back("-" + gm->current->getName() + " called $" + std::to_string(gm->minMatch) + ".");
-					break;
+					gm->canCheck = false;
+					return;
 				}
 			}
 			else if (sf::findString(input, "raise") || sf::findString(input, "bet"))
@@ -184,7 +164,8 @@ namespace ps
 				if (raise(input, gm))
 				{
 					gm->log.push_back("-" + gm->current->getName() + " raised to total $" + std::to_string(gm->minMatch) + ".");
-					break;
+					gm->canCheck = false;
+					return;
 				}
 			}
 			else if (sf::findString(input, "all in") || sf::findString(input, "all-in"))
@@ -192,7 +173,8 @@ namespace ps
 				if (all_in(input, gm))
 				{
 					gm->log.push_back("-" + gm->current->getName() + " went all in, to total $" + std::to_string(gm->minMatch) + ".");
-					break;
+					gm->canCheck = false;
+					return;
 				}
 			}
 			else if (sf::findString(input, "fold") || sf::findString(input, "quit"))
@@ -200,7 +182,7 @@ namespace ps
 				if (fold(input, gm))
 				{
 					gm->log.push_back("-" + gm->current->getName() + " folded.");
-					break;
+					return;
 				}
 			}
 			else

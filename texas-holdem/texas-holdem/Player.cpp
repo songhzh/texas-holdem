@@ -40,20 +40,17 @@ int Player::getMoneyTotal()
 
 bool Player::hasMatched(int minMatch)
 {
-	if (money_total < minMatch)
-		return money_bet == money_total;
-	else
-		return money_bet == minMatch;
+	return money_free == 0 || money_bet == minMatch;
 }
 
-bool Player::cannotRaise(int minRaise)
+bool Player::cannotRaise(int minMatch, int minRaise)
 {
-	return money_bet + minRaise > money_total && hasMatched(minRaise);
+	return money_total < minMatch + minRaise;
 }
 
-bool Player::inRound()
+bool Player::isActive()
 {
-	return (!folded) && (money_free != 0);
+	return !folded && money_free != 0;
 }
 
 void Player::bet(int amt)
@@ -72,7 +69,7 @@ void Player::call(int minMatch)
 
 bool Player::raise(int& minMatch, int& minRaise)
 {
-	if (money_total < minMatch + minRaise)
+	if (cannotRaise(minMatch, minRaise))
 	{
 		std::cout << "You do not meet the minimum raise amount." << std::endl;
 		return false;
@@ -95,7 +92,7 @@ bool Player::raise(int& minMatch, int& minRaise)
 
 bool Player::raise(int& minMatch, int& minRaise, int amt)
 {
-	if (money_total < minMatch + minRaise)
+	if (cannotRaise(minMatch, minRaise))
 	{
 		std::cout << "You do not meet the minimum raise amount." << std::endl;
 		return false;

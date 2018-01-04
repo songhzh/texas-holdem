@@ -17,8 +17,8 @@ public:
 	int getMoneyFree();
 	int getMoneyTotal();
 	bool hasMatched(int minMatch);
-	bool cannotRaise(int minRaise);
-	bool inRound();
+	bool cannotRaise(int minMatch, int minRaise);
+	bool isActive();
 
 	void call(int minMatch);
 	bool raise(int& minMatch, int& minRaise);
